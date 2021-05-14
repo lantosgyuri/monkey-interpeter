@@ -3,8 +3,10 @@ package repl
 import (
 	"bufio"
 	"fmt"
+	evaluator "github.com/lantosgyuri/monkey-interpreter/evaulator"
 	"github.com/lantosgyuri/monkey-interpreter/lexer"
-	"github.com/lantosgyuri/monkey-interpreter/token"
+	"github.com/lantosgyuri/monkey-interpreter/object"
+	"github.com/lantosgyuri/monkey-interpreter/parser"
 	"io"
 )
 
@@ -12,6 +14,7 @@ const PROMPT = "LETS TYPE >> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnvironment()
 
 	for {
 		_, err := fmt.Fprint(out,PROMPT)
@@ -26,9 +29,30 @@ func Start(in io.Reader, out io.Writer) {
 
 		line := scanner.Text()
 		l := lexer.New(line)
+		p := parser.New(l)
 
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			_, _ = fmt.Fprintf(out, "%+v\n", tok)
+		program := p.ParseProgram()
+
+		if len(p.Errors()) != 0 {
+			printError(out, p.Errors())
 		}
+
+		eval := evaluator.Eval(program, env)
+
+		if eval != nil {
+			_, err := io.WriteString(out, eval.Inspect())
+			if err != nil {
+				fmt.Printf("Error with writing to the console: %w \n", err)
+			}
+		}
+	}
+}
+
+func printError(out io.Writer, errors []string) {
+	for _, v := range errors {
+		_, err := io.WriteString(out, fmt.Sprintf("%v \n", v))
+		if err != nil {
+		fmt.Printf("Error with writing to the console: %w \n", err)
+	}
 	}
 }
