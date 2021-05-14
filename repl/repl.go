@@ -42,7 +42,7 @@ func Start(in io.Reader, out io.Writer) {
 		if eval != nil {
 			_, err := io.WriteString(out, eval.Inspect())
 			if err != nil {
-				fmt.Printf("Error with writing to the console: %w \n", err)
+				fmt.Printf("Error with writing to the console: %v \n", err)
 			}
 		}
 	}
@@ -52,7 +52,7 @@ func printError(out io.Writer, errors []string) {
 	for _, v := range errors {
 		_, err := io.WriteString(out, fmt.Sprintf("%v \n", v))
 		if err != nil {
-		fmt.Printf("Error with writing to the console: %w \n", err)
+		fmt.Printf("Error with writing to the console: %v \n", err)
 	}
 	}
 }
